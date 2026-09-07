@@ -41,5 +41,37 @@ class TravelState(TypedDict):
     messages:Annotated[list[AnyMessage],operator.add]
     flight_results: str
     hotel_results : str
-    llm_call: str
-    itinerary: atr
+    llm_calls: str
+    itinerary: str
+
+#===========Flight agent =================
+
+def flight_agent(state: TravelState):
+    query=state["user_query"]
+
+    flight_data=search_flights(query)
+
+    return {
+        "flight_results": flight_data,
+        "messages": [
+            AIMessage(content="Flight results fetched")
+        ],
+
+        "llm_calls": state.get("llm_call", 0) + 1
+
+
+    }
+
+def hotel_agent(state:TravelState):
+    query=f"Best Hotels for {state['user_query']}"
+
+    hotel_results= tavily_search(query)
+
+    return {
+        "hotel_results": hotel_results,
+        "messages": [
+            AIMessage(content=" Hotels detailed fetched")
+        ],
+        "llm_calls": state.get('llm_calls',0) + 1
+    }
+
