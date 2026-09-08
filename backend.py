@@ -180,3 +180,12 @@ def final_agent(state:TravelState):
     }
 
     
+#==============build graph================
+
+graph=StateGraph(TravelState)
+
+graph.add_node("flight_agent", flight_agent)
+graph.add_node("hotel_agent", hotel_agent)
+graph.add_node("itinerary_agent", itinerary_agent)
+graph.add_node("final_agent", final_agent)
+
