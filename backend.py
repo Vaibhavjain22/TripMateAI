@@ -41,7 +41,7 @@ class TravelState(TypedDict):
     messages:Annotated[list[AnyMessage],operator.add]
     flight_results: str
     hotel_results : str
-    llm_calls: str
+    llm_calls: int
     itinerary: str
 
 #===========Flight agent =================
@@ -75,3 +75,108 @@ def hotel_agent(state:TravelState):
         "llm_calls": state.get('llm_calls',0) + 1
     }
 
+#=====================Itinerary agent ===============
+
+def itinerary_agent(state:TravelState):
+    flight_results=state["flight_results"]
+    hotel_results=state["hotel_results"]
+
+    user_query=state['user_query']
+
+    system_prompt="""You are TripMate AI, an expert Travel Planner.
+    Your goal is to build a detailed, structured, day-by-day travel 
+    itinerary based on the user's request, flight options, and hotel 
+    options provided.
+
+    Format your response in clean Markdown with the following sections:
+
+    1. ✈️ **Flight Options & Logistics**
+    (Summarize flight schedules, airlines, and airports)
+
+    2. 🏨 **Recommended Accommodations**
+    (Highlight top hotel choices with features)
+
+    3. 🗺️ **Day-by-Day Detailed Itinerary** 
+    (Break down each day into Morning, Afternoon, and Evening activities)
+
+    4. 💡 **Travel Tips & Local Insights**
+    (Transportation, food, local customs)
+
+    5. 💰 **Estimated Budget Summary**
+    (Approximate cost breakdown)
+    Make the plan realistic, enjoyable, and well-paced!"""
+
+    human_prompt=f""" 
+    User_query: 
+    {user_query}
+
+    flight_result:
+    {flight_results}
+
+    hotel_result:
+    {hotel_results}
+
+    Please generate the complete travel itinerary now
+    """
+
+    messages=[
+        SystemMessage(content=system_prompt),
+        HumanMessage(content="human_prompt")
+    ]
+
+    response=llm.invoke(messages)
+
+    return {
+        "itinerary": response.content,
+        "messages":[response],
+        "llm_calls": state.get('llm_calls',0) + 1
+    }
+
+
+#=============final agent===============
+
+def final_agent(state:TravelState):
+
+    final_prompt= f"""
+    Generate the final travel response for the user.
+
+    User Request:
+    {state['user_query']}
+
+    Flights:
+    {state['flight_results']}
+
+    Hotels:
+    {state['hotel_results']}
+
+    Itinerary:
+    {state['itinerary']}
+
+    Format the final answer beautifully using these sections:
+
+    1. Trip Summary
+    2. Flight Information
+    3. Hotel Suggestions
+    4. Day-by-Day Itinerary
+    5. Estimated Budget
+    6. Final Recommendations
+
+    Important:
+    - Be clear and practical.
+    - Mention that live flight API may not provide ticket prices if pricing is unavailable.
+    - Keep the response useful for real travel planning.
+    """
+
+    messages=[
+        SystemMessage(content="You are a professional AI travel booking assistant."),
+        HumanMessage(content=final_prompt)
+    ]
+
+    response=llm.invoke(messages)
+
+    return {
+        "messages":[response],
+        "llm_calls":state.get('llm_calls',0) + 1
+    }
+
+    
