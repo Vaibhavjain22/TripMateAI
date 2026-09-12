@@ -9,3 +9,12 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from backend import run_travel_agent
+
+
+app=FastAPI(
+    title="TripMate AI",
+    description="Langgraph Mulit-Agent Travel Planner Agent",
+    version="1.0.0"
+)
+
+
