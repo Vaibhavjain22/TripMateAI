@@ -11,7 +11,7 @@ from psycopg.rows import dict_row
 load_dotenv()
 
 os.environ["SSL_CERT_FILE"] = certifi.where()
-os.environ["REQUESTS_CA_BUNDLE"] = certifi.where
+os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 
 import operator
 import asyncio
@@ -54,7 +54,7 @@ api_key=os.getenv("OPENAI_API_KEY")
 
 
 llm=ChatOpenAI(
-    model="gpt-40-mini",
+    model="gpt-4o-mini",
     api_key= api_key
 )
 
@@ -81,7 +81,7 @@ def flight_agent(state: TravelState):
             AIMessage(content="Flight results fetched")
         ],
 
-        "llm_calls": state.get("llm_call", 0) + 1
+        "llm_calls": state.get("llm_calls", 0) + 1
 
 
     }
@@ -145,7 +145,7 @@ def itinerary_agent(state:TravelState):
 
     messages=[
         SystemMessage(content=system_prompt),
-        HumanMessage(content="human_prompt")
+        HumanMessage(content=human_prompt)
     ]
 
     response=llm.invoke(messages)
@@ -235,7 +235,7 @@ _conn=psycopg.connect(
 checkpointer=PostgresSaver(_conn)
 checkpointer.setup()
 
-graph.compile(checkpointer=checkpointer)
+travel_graph = graph.compile(checkpointer=checkpointer)
 
 # =========================
 # Function for FastAPI
