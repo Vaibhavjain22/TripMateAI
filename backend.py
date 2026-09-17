@@ -171,8 +171,8 @@ def weather_agent(state:TravelState):
     {state['user_query']}
     """
     message=[
-        SystemMessage=system_prompt,
-        HumanMessage=human_prompt
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=human_prompt)
     ]
 
     response=llm.invoke(message)
