@@ -67,6 +67,7 @@ class TravelState(TypedDict):
     hotel_results : str
     llm_calls: int
     itinerary: str
+    weather_results:str
 
 #===========Flight agent =================
 
@@ -155,7 +156,32 @@ def itinerary_agent(state:TravelState):
         "messages":[response],
         "llm_calls": state.get('llm_calls',0) + 1
     }
+#=======================Weather Agent=================
 
+def weather_agent(state:TravelState): 
+
+    system_prompt="""
+    your main aim is to fetch the weather forecast for the user's travel destination.
+    Based on the destination mentioned by the user in the user query fecth the 
+    wether details of thta destination. give a short detail about the weather condition.
+    Make use of Tavily search tool to fetch the weather information.
+    """
+    human_prompt=f"""
+    Uaer query:
+    {state['user_query']}
+    """
+    message=[
+        SystemMessage=system_prompt,
+        HumanMessage=human_prompt
+    ]
+
+    response=llm.invoke(message)
+
+    return {
+        "weather_results":response.content,
+        "messages":[response],
+        "llm_calls": state.get('llm_calls',0) + 1
+    }
 
 #=============final agent===============
 
