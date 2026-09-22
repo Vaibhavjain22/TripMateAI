@@ -31,3 +31,9 @@ python-dotenv==1.2.2
 requests==2.34.2
 certifi==2026.6.17
 nest_asyncio==1.6.0
+
+pydantic==2.13.2
+langchain-mcp-adapters==0.3.0
+nest_asyncio==1.6.0
+mcp==1.28.1
+
