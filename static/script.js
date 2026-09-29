@@ -35,27 +35,159 @@ function hideError() {
     errorBox.textContent = "";
 }
 
-function showResult(answer, threadId) {
-    latestAnswerMarkdown = answer;
+function renderAgentBadges(selectedAgents) {
+    const badgesContainer = document.getElementById("agentBadges");
+    if (!badgesContainer) return;
+
+    if (!selectedAgents || selectedAgents.length === 0) {
+        badgesContainer.innerHTML = "";
+        return;
+    }
+
+    const agentLabels = {
+        "flight_agent": "✈️ Flight Agent",
+        "hotel_agent": "🏨 Hotel Agent",
+        "weather_agent": "☀️ Weather Agent",
+        "budget_agent": "💰 Budget Analyst",
+        "itinerary_agent": "🗺️ Itinerary Agent"
+    };
+
+    badgesContainer.innerHTML = selectedAgents
+        .map(agent => `<span class="agent-chip">${agentLabels[agent] || agent}</span>`)
+        .join("");
+}
+
+function toggleRevisionBox() {
+    const revisionArea = document.getElementById("revisionArea");
+    if (revisionArea) {
+        revisionArea.classList.toggle("hidden");
+    }
+}
+
+function showResult(data) {
+    if (typeof data === "string") {
+        data = { answer: data, thread_id: currentThreadId };
+    }
+
+    if (data.guardrail_allowed === false) {
+        showError(data.guardrail_reason || "Request was blocked by safety guardrails.");
+        document.getElementById("resultSection").classList.add("hidden");
+        return;
+    }
+
+    latestAnswerMarkdown = data.answer || "";
 
     const resultSection = document.getElementById("resultSection");
     const resultBox = document.getElementById("resultBox");
     const threadInfo = document.getElementById("threadInfo");
+    const resultTitle = document.getElementById("resultTitle");
+    const approvalBox = document.getElementById("approvalBox");
+    const approvalMsg = document.getElementById("approvalMsg");
 
     if (typeof marked !== "undefined") {
-        resultBox.innerHTML = marked.parse(answer);
+        resultBox.innerHTML = marked.parse(latestAnswerMarkdown);
     } else {
-        resultBox.innerText = answer;
+        resultBox.innerText = latestAnswerMarkdown;
     }
 
-    threadInfo.textContent = `Thread ID: ${threadId}`;
+    threadInfo.textContent = `Thread ID: ${data.thread_id || currentThreadId}`;
+    renderAgentBadges(data.selected_agents);
+
+    // Handle Human-in-the-Loop review state
+    if (data.requires_approval) {
+        if (approvalBox) {
+            approvalBox.classList.remove("hidden");
+            if (data.approval_request && approvalMsg) {
+                approvalMsg.textContent = data.approval_request;
+            }
+        }
+        if (resultTitle) {
+            resultTitle.textContent = "Draft Itinerary (Pending Review)";
+        }
+    } else {
+        if (approvalBox) {
+            approvalBox.classList.add("hidden");
+        }
+        if (resultTitle) {
+            resultTitle.textContent = "Your Finalized Travel Plan";
+        }
+    }
 
     resultSection.classList.remove("hidden");
-
     resultSection.scrollIntoView({
         behavior: "smooth",
         block: "start"
     });
+}
+
+async function submitApproval(approved) {
+    hideError();
+
+    const feedbackInput = document.getElementById("feedbackInput");
+    const feedback = feedbackInput ? feedbackInput.value.trim() : "";
+
+    if (!approved && !feedback) {
+        showError("Please enter your revision feedback before submitting changes.");
+        return;
+    }
+
+    const btnText = approved ? document.getElementById("approveBtnText") : document.getElementById("revisionBtnText");
+    const btnLoader = approved ? document.getElementById("approveLoader") : document.getElementById("revisionLoader");
+    const approveBtn = document.getElementById("approveBtn");
+    const revisionSubmitBtn = document.getElementById("revisionSubmitBtn");
+
+    if (btnText && btnLoader) {
+        btnText.classList.add("hidden");
+        btnLoader.classList.remove("hidden");
+    }
+    if (approveBtn) approveBtn.disabled = true;
+    if (revisionSubmitBtn) revisionSubmitBtn.disabled = true;
+
+    try {
+        const response = await fetch("/api/travel/approve", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                thread_id: currentThreadId,
+                approved: approved,
+                feedback: feedback
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || "Approval request failed.");
+        }
+
+        if (data.thread_id) {
+            currentThreadId = data.thread_id;
+            localStorage.setItem("travel_thread_id", currentThreadId);
+        }
+
+        // Reset feedback input
+        if (feedbackInput) {
+            feedbackInput.value = "";
+        }
+        const revisionArea = document.getElementById("revisionArea");
+        if (revisionArea) {
+            revisionArea.classList.add("hidden");
+        }
+
+        showResult(data);
+
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        if (btnText && btnLoader) {
+            btnText.classList.remove("hidden");
+            btnLoader.classList.add("hidden");
+        }
+        if (approveBtn) approveBtn.disabled = false;
+        if (revisionSubmitBtn) revisionSubmitBtn.disabled = false;
+    }
 }
 
 async function sendMessage() {
@@ -79,7 +211,7 @@ async function sendMessage() {
             },
             body: JSON.stringify({
                 message: message,
-                thread_id: currentThreadId
+                thread_id: null
             })
         });
 
@@ -92,7 +224,7 @@ async function sendMessage() {
         currentThreadId = data.thread_id;
         localStorage.setItem("travel_thread_id", currentThreadId);
 
-        showResult(data.answer, data.thread_id);
+        showResult(data);
 
     } catch (error) {
         showError(error.message);
