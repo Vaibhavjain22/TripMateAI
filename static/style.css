@@ -152,6 +152,33 @@ body {
     box-shadow: 0 0 18px #22c55e;
 }
 
+.agent-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.agent-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.14);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    color: #bfdbfe;
+    font-size: 0.8rem;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.agent-chip:hover {
+    background: rgba(37, 99, 235, 0.22);
+    border-color: rgba(96, 165, 250, 0.5);
+}
+
 .input-area {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -270,6 +297,132 @@ textarea::placeholder {
 .download-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 16px 36px rgba(34, 197, 94, 0.35);
+}
+
+.approval-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(180, 83, 9, 0.08) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 20px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 14px 40px rgba(245, 158, 11, 0.1);
+    backdrop-filter: blur(14px);
+    animation: fadeIn 0.3s ease;
+}
+
+.approval-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.approval-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.approval-header h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fef08a;
+    margin-bottom: 6px;
+}
+
+.approval-header p {
+    font-size: 0.92rem;
+    color: #fef3c7;
+    line-height: 1.5;
+    opacity: 0.92;
+}
+
+.approval-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.approve-btn,
+.toggle-revision-btn,
+.revision-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.92rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.approve-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.3);
+}
+
+.approve-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(16, 185, 129, 0.42);
+}
+
+.approve-btn:disabled,
+.revision-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.toggle-revision-btn {
+    background: rgba(30, 41, 59, 0.85);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fef08a;
+}
+
+.toggle-revision-btn:hover {
+    background: rgba(245, 158, 11, 0.18);
+    border-color: rgba(245, 158, 11, 0.65);
+    transform: translateY(-1px);
+}
+
+.revision-area {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 0.25s ease;
+}
+
+.revision-area textarea {
+    min-height: 90px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    font-size: 0.92rem;
+    color: #ffffff;
+    resize: vertical;
+}
+
+.revision-area textarea:focus {
+    border-color: rgba(245, 158, 11, 0.8);
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+}
+
+.revision-btn {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #d97706, #b45309);
+    color: #ffffff;
+    box-shadow: 0 8px 22px rgba(217, 119, 6, 0.28);
+}
+
+.revision-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(217, 119, 6, 0.4);
 }
 
 .pdf-content {
@@ -426,6 +579,8 @@ footer {
     .hero-section,
     footer,
     .result-actions,
+    .approval-card,
+    .agent-badges,
     #threadInfo {
         display: none;
     }
