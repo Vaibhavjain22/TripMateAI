@@ -8,7 +8,7 @@
 
     <title>TripMate AI</title>
 
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=2">
 </head>
 
 <body>
@@ -23,7 +23,7 @@
 
         <section class="hero-section">
             <div class="badge">
-                ✈️ TripMate AI — A Multi-Agent Travel Planner with LangGraph and MCP
+                ✈️ TripMate AI — A Multi-Agent Travel Planner with LangGraph, Supervisor, MCP, HITL,Guardrails
             </div>
 
             <h1>
@@ -89,8 +89,9 @@
 
             <div class="result-header">
                 <div>
-                    <h2>Your AI Travel Plan</h2>
+                    <h2 id="resultTitle">Your AI Travel Plan</h2>
                     <p id="threadInfo">Thread ID: -</p>
+                    <div id="agentBadges" class="agent-badges"></div>
                 </div>
 
                 <div class="result-actions">
@@ -100,6 +101,35 @@
 
                     <button class="download-btn" onclick="downloadPDF()">
                         Download PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Human-in-the-Loop Approval Card -->
+            <div id="approvalBox" class="approval-card hidden">
+                <div class="approval-header">
+                    <span class="approval-icon">⏸️</span>
+                    <div>
+                        <h3>Human-in-the-Loop Review</h3>
+                        <p id="approvalMsg">Please review the draft itinerary below. Approve it to generate the final
+                            polished plan, or provide feedback for revision.</p>
+                    </div>
+                </div>
+                <div class="approval-actions">
+                    <button id="approveBtn" class="approve-btn" onclick="submitApproval(true)">
+                        <span id="approveBtnText">✅ Approve & Finalize</span>
+                        <span id="approveLoader" class="loader hidden"></span>
+                    </button>
+                    <button id="toggleRevisionBtn" class="toggle-revision-btn" onclick="toggleRevisionBox()">
+                        ✍️ Request Revision
+                    </button>
+                </div>
+                <div id="revisionArea" class="revision-area hidden">
+                    <textarea id="feedbackInput"
+                        placeholder="Describe the changes you'd like (e.g., cheaper hotels, more outdoor activities on Day 2)..."></textarea>
+                    <button id="revisionSubmitBtn" class="revision-btn" onclick="submitApproval(false)">
+                        <span id="revisionBtnText">Submit Feedback & Revise</span>
+                        <span id="revisionLoader" class="loader hidden"></span>
                     </button>
                 </div>
             </div>
@@ -116,7 +146,7 @@
     </main>
 
     <footer>
-        Built with FastAPI, LangGraph, Groq, PostgreSQL, Tavily and AviationStack
+        Built with FastAPI, LangGraph, OpenAI, PostgreSQL, Tavily and Custom Weather MCP
     </footer>
 
     <!-- Markdown Renderer -->
@@ -126,7 +156,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- Your Custom JS -->
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js?v=2"></script>
 
 </body>
 
