@@ -1,5 +1,10 @@
+import sys
 from pathlib import Path
 import traceback
+
+BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR / "src") not in sys.path:
+    sys.path.insert(0, str(BASE_DIR / "src"))
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -8,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-from backend import run_travel_agent, resume_travel_agent
+from src.backend import run_travel_agent, resume_travel_agent
 
 # This is kept from the original project to allow the existing synchronous
 # agent functions to call async MCP helpers inside FastAPI.
