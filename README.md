@@ -23,6 +23,7 @@ Transforming natural language travel prompts into comprehensive travel dossiers,
 - [Model Context Protocol (MCP) Integration](#-model-context-protocol-mcp-integration)
 - [Human-in-the-Loop (HITL) Workflow](#-human-in-the-loop-hitl-workflow)
 - [Project Directory Structure](#-project-directory-structure)
+- [Agent Evaluation & Benchmark Results](#-agent-evaluation--benchmark-results)
 - [Tech Stack](#-tech-stack)
 - [Environment Setup & Configuration](#-environment-setup--configuration)
 - [Installation & Quickstart](#-installation--quickstart)
@@ -68,7 +69,7 @@ Planning travel involves consulting fragmented sources: airline schedules, hotel
                                                  v
                                +------------------------------------+
                                |        LangGraph StateGraph        |
-                               |            (backend.py)            |
+                               |          (src/backend.py)          |
                                +------------------------------------+
                                                  |
                                                  v
@@ -158,7 +159,7 @@ Planning travel involves consulting fragmented sources: airline schedules, hotel
 TripMateAI uses `langchain-mcp-adapters` with a multi-server MCP architecture:
 
 ```python
-# mcp_client.py
+# src/mcp_client.py
 client = MultiServerMCPClient({
     # 1. Remote Streamable HTTP MCP
     "tavily": {
@@ -220,22 +221,73 @@ TripMateAI implements true state-level execution pausing:
 
 ```text
 TripMateAI/
-├── .env                              # API keys and connection secrets (git-ignored)
-├── .gitignore                        # Git exclusion rules
-├── LICENSE                           # MIT License
-├── README.md                         # Comprehensive documentation
-├── requirements.txt                  # Pinned Python package dependencies
-├── app.py                            # FastAPI application server and REST endpoints
-├── backend.py                        # LangGraph DAG definition, supervisor & agent nodes
-├── custom_weather_mcp_server.py      # Standalone FastMCP Weather server (OpenWeatherMap)
-├── mcp_client.py                     # MultiServerMCPClient orchestrator & tool wrappers
-├── test.py                           # Quick-validation script for testing graph runs
+├── src/                                  # Core application source code
+│   ├── __init__.py                       # Package initializer
+│   ├── backend.py                        # LangGraph DAG definition, supervisor & agent nodes
+│   ├── custom_weather_mcp_server.py      # Standalone FastMCP Weather server (OpenWeatherMap)
+│   ├── mcp_client.py                     # MultiServerMCPClient orchestrator & tool wrappers
+│   └── evaluate.py                       # Evaluation runner with LangSmith logging & LLM judge
+│
+├── evaluation/                           # Dedicated evaluation dataset & results
+│   ├── __init__.py                       # Package initializer
+│   ├── eval_dataset.json                 # 20-case golden benchmark dataset
+│   └── eval_results.json                 # Evaluation run results, metrics, and token costs
+│
 ├── static/
-│   ├── style.css                     # Glassmorphic dark design system & print styles
-│   └── script.js                     # Frontend API bindings, HITL handling, and PDF export
-└── templates/
-    └── index.html                    # Single-page interface with dynamic agent badges
+│   ├── style.css                         # Glassmorphic dark design system & print styles
+│   └── script.js                         # Frontend API bindings, HITL handling, and PDF export
+├── templates/
+│   └── index.html                        # Single-page interface with dynamic agent badges
+├── app.py                                # FastAPI application server and REST endpoints
+├── requirements.txt                      # Pinned Python package dependencies
+├── README.md                             # Comprehensive documentation
+├── .env                                  # API keys and connection secrets (git-ignored)
+├── .gitignore                            # Git exclusion rules
+└── LICENSE                               # MIT License
 ```
+
+---
+
+## 🧪 Agent Evaluation & Benchmark Results
+
+TripMateAI includes a production evaluation engine (`src/evaluate.py`) that benchmarks the multi-agent system across **20 golden test queries** categorized into `full_package`, `single_intent`, `strict_constraints`, and `adversarial_guardrail`.
+
+Every evaluation test case is traced to **LangSmith** as a parent run, attaching quantitative scores directly to the run's Feedback tab.
+
+### 🏆 Executive Scorecard
+
+| Metric | Type | Score | Description |
+| :--- | :---: | :---: | :--- |
+| **Safety Guardrail Accuracy** | Deterministic | **100.0%** | 5/5 prompt injections & harmful requests intercepted |
+| **HITL Interrupt Fidelity** | Deterministic | **100.0%** | 15/15 valid plans paused at state checkpoint & resumed |
+| **Constraint Adherence** | LLM Judge (`gpt-4o-mini`) | **98.3%** | 14/15 queries strictly satisfied all explicit constraints |
+| **Supervisor Routing Accuracy** | Deterministic (Jaccard) | **81.4%** | Specialist agents accurately dispatched per intent |
+| **OVERALL SYSTEM SCORE** | Combined | **94.9%** | **Production-grade multi-agent reliability** |
+
+### ⚡ Cost & Resource Efficiency
+- **Tokens Consumed**: 165,484 prompt tokens + 45,669 completion tokens
+- **Total OpenAI Spend**: **~$0.0522 USD (~5.2 cents)** for all 20 end-to-end multi-agent runs and LLM judge verdicts combined.
+
+### 🚀 Running the Evaluation
+
+To run the full 20-case benchmark:
+```bash
+python src/evaluate.py
+```
+
+Additional CLI options:
+```bash
+# Run specific test cases only
+python src/evaluate.py --ids TC-01 TC-02 TC-16
+
+# Skip LLM judge for faster / cheaper runs
+python src/evaluate.py --no-judge
+
+# Set spend safeguard limit (USD)
+python src/evaluate.py --max-cost 0.20
+```
+
+Results are saved to `evaluation/eval_results.json` and automatically tracked in your **LangSmith** project (`TripMateAI`).
 
 ---
 
