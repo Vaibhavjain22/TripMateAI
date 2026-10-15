@@ -1,8 +1,14 @@
 import os
 import certifi
+from pathlib import Path
 from dotenv import load_dotenv
 
+BASE_DIR = Path(__file__).resolve().parent
+ROOT_DIR = BASE_DIR.parent
+load_dotenv(ROOT_DIR / ".env")
+load_dotenv(BASE_DIR / ".env")
 load_dotenv()
+
 os.environ["SSL_CERT_FILE"] = certifi.where()
 os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 
@@ -25,15 +31,26 @@ from langchain_core.messages import (
 from langchain_openai import ChatOpenAI
 
 
-from mcp_client import (
-    tavily_mcp_search,
-    aviation_mcp_call,
-    aviation_airport_schedule,
-    aviation_airline_flights,
-    extract_destination,
-    forecast_mcp_search,
-    weather_mcp_search,
-)
+try:
+    from src.mcp_client import (
+        tavily_mcp_search,
+        aviation_mcp_call,
+        aviation_airport_schedule,
+        aviation_airline_flights,
+        extract_destination,
+        forecast_mcp_search,
+        weather_mcp_search,
+    )
+except ImportError:
+    from mcp_client import (
+        tavily_mcp_search,
+        aviation_mcp_call,
+        aviation_airport_schedule,
+        aviation_airline_flights,
+        extract_destination,
+        forecast_mcp_search,
+        weather_mcp_search,
+    )
 
 
 # =========================
