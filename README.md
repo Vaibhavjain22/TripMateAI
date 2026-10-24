@@ -151,6 +151,7 @@ Planning travel involves consulting fragmented sources: airline schedules, hotel
 - **Resilient Tool Design**: Tailored to AviationStack's free-tier `/v1/flights` capabilities, ensuring live airport departures and airline tracking operate without paid-tier catalog errors.
 - **Full Observability**: Integrated with **LangSmith** for trace visualization, token consumption auditing, and latency inspection across every agent node.
 - **Interactive UI**: Dark-mode glassmorphic interface with active agent chips, marked.js Markdown rendering, 1-click clipboard copying, and client-side PDF export (`html2pdf.js`).
+- **Hub-and-Spoke Regional Routing**: For destinations or origins without commercial airports (e.g., hill stations or remote towns), the system maps to the nearest commercial aviation hub and provides first-mile/last-mile ground transit advisories.
 
 ---
 
@@ -183,7 +184,7 @@ client = MultiServerMCPClient({
 })
 ```
 
-### Custom Weather FastMCP Server (`custom_weather_mcp_server.py`)
+### Custom Weather FastMCP Server (`src/custom_weather_mcp_server.py`)
 Built using FastMCP to expose clean tool schemas to LLMs:
 - **`get_current_weather(city: str)`**: Temperature, humidity, wind speed, and meteorological conditions.
 - **`get_forecast(city: str)`**: 5-day daily forecast breakdowns.
@@ -250,7 +251,11 @@ TripMateAI/
 
 ## 🧪 Agent Evaluation & Benchmark Results
 
-TripMateAI includes a production evaluation engine (`src/evaluate.py`) that benchmarks the multi-agent system across **20 golden test queries** categorized into `full_package`, `single_intent`, `strict_constraints`, and `adversarial_guardrail`.
+TripMateAI includes a production evaluation engine (`src/evaluate.py`) that benchmarks the multi-agent system across **20 golden test queries** (`evaluation/eval_dataset.json`), categorized into:
+- ✈️ **Full Package** (5 cases): Multi-city, flights, luxury/budget hotels, and full day-by-day itineraries.
+- 🎯 **Single Intent** (5 cases): Focused inquiries (hotel-only, flight-only, or weather-only searches).
+- 🔒 **Strict Constraints** (5 cases): Narrow budget caps, tight date windows, and specific airline/transit constraints.
+- 🛡️ **Adversarial Guardrails** (5 cases): Prompt injections, illegal queries, and out-of-domain requests.
 
 Every evaluation test case is traced to **LangSmith** as a parent run, attaching quantitative scores directly to the run's Feedback tab.
 
@@ -381,10 +386,12 @@ uvx --version
 
 ### 5. Launch the Application
 ```bash
-uvicorn app:app --host 127.0.0.1 --port 5050 --reload
+python app.py
+# or
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Open **`http://127.0.0.1:5050`** in your browser.
+Open **`http://127.0.0.1:8000`** in your browser.
 
 ---
 
@@ -519,6 +526,7 @@ View trace graphs, step latencies, and token expenditures at [smith.langchain.co
 
 ## 🗺️ Future Roadmap
 
+- [ ] **Multi-Modal Ground Transit Specialist**: Integrate dedicated rail (e.g. IRCTC/Eurail) and intercity bus tools for sub-400km trips or non-airport first-mile transfers.
 - [ ] **Parallel Specialist Fan-Out**: Execute independent specialists (`flight`, `hotel`, `weather`) concurrently via LangGraph branch fan-out to reduce initial latency.
 - [ ] **Server-Sent Events (SSE) Streaming**: Stream token chunks and intermediate agent thought badges directly to the browser UI.
 - [ ] **Multi-City Route Optimization**: Add topological sorting for multi-destination train/flight logistics.
